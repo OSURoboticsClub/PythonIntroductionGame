@@ -4,7 +4,8 @@ the map! You are allowed to only control the acceleration of the rover,
 though you are welcome to access any information about the field, and there is
 exposed information as follows that you can use to manipulate the simulation.
 
-
+Information you have access to (and how to access):
+Rover position: Get it from rover.position. It will return
 
 
 
