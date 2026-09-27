@@ -1,4 +1,5 @@
 import random
+import sys
 import time
 from collections import deque
 from math import isfinite
@@ -21,8 +22,8 @@ class Field:
     # This leaves five empty cells between their 3x3 footprints.
     OBSTACLE_CENTER_CLEARANCE = OBSTACLE_SIZE + Rover.SIZE
 
-    def __init__(self, seed: Optional[int] = None, x_size: int = 80,
-                 y_size: int = 24, obstacle_count: int = 10,
+    def __init__(self, seed: Optional[int] = None, x_size: int = 150,
+                 y_size: int = 35, obstacle_count: int = 10,
                  endpoint_padding: int = 10) -> None:
         if not isinstance(x_size, int) or isinstance(x_size, bool) or x_size < 12:
             raise ValueError("x_size must be an integer of at least 12")
@@ -275,8 +276,16 @@ class Field:
             self._update_rover_location()
             return self._status
 
-    def start_simulation(self) -> Thread:
-        """Start automatic physics updates in a background thread."""
+    def start_simulation(self, display: bool = True) -> Thread:
+        """Start automatic physics updates in a background thread.
+
+        When ``display`` is true, the current field is redrawn in the
+        terminal after every physics tick.  This keeps terminal rendering out
+        of a student's ``main`` function while still allowing tests and other
+        callers to disable output.
+        """
+        if not isinstance(display, bool):
+            raise TypeError("display must be a bool")
         with self.__state_lock:
             if self._status != "playing":
                 raise RuntimeError("a finished game cannot be restarted")
@@ -285,8 +294,8 @@ class Field:
             self.__simulation_stop.clear()
             self.__simulation_thread = Thread(
                 target=self.__simulation_loop,
+                args=(display,),
                 name=f"rover-simulation-{self._seed}",
-                daemon=True,
             )
             self.__simulation_thread.start()
             return self.__simulation_thread
@@ -306,7 +315,7 @@ class Field:
         thread.join(timeout)
         return not thread.is_alive()
 
-    def __simulation_loop(self) -> None:
+    def __simulation_loop(self, display: bool) -> None:
         next_tick = time.monotonic()
         while not self.__simulation_stop.is_set() and self.status == "playing":
             next_tick += self._tick_speed
@@ -314,6 +323,21 @@ class Field:
             if self.__simulation_stop.wait(delay):
                 break
             self._tick()
+            if display:
+                self._display()
+
+    def _display(self) -> None:
+        """Redraw the field and status in the terminal."""
+        rover = self.rover
+        position = rover.position
+        print("\033[H\033[J" + self.render(), flush=True)
+        print(f"seed={self.seed} elapsed={self.elapsed_time:.2f}s status={self.status}",
+              flush=True)
+        print(f"velocity: x={rover.x_speed:+.3f} y={rover.y_speed:+.3f} "
+              f"speed={self.current_speed:.3f}", flush=True)
+        print(f"acceleration: x={rover.x_acceleration:+.3f} "
+              f"y={rover.y_acceleration:+.3f}", flush=True)
+        print(f"rover position: x={position.x:.3f} y={position.y:.3f}", flush=True)
 
     def render(self) -> str:
         with self.__state_lock:
