@@ -1,2 +1,6 @@
 # PythonIntroductionGame
 This is a game where you control a simulated rover via acceleration only to get it to an end point in a command line window. There is capability for a fixed environment and dynamic environment, and the goal to complete the game is to do so entirely autonomously.
+
+There are a few functions that are exposed that allow you to control the rover via programming, which are viewable in the main.py file. The goal is to only use these functions in order to navigate to the end of the course, avoiding obstacles along the way. This requires planning when to accelerate and decelerate, since you are not able to instantly brake the rover!
+
+Included in this repo are the starter main.py file, which contains instructions on what functions you have available to you in order to complete the task. Additionally, there's a game preview module that allows you to test out the game via manual control, where WASD sets your acceleration to 3 units/s/s, and space cancels your current acceleration (but not your velocity)!

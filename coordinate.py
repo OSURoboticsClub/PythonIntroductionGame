@@ -24,3 +24,6 @@ class Coordinate:
 
     def __repr__(self) -> str:
         return f"Coordinate(x={self.x}, y={self.y})"
+
+    def __str__(self) -> str:
+        return f"Coordinate({self.x}, {self.y})"
